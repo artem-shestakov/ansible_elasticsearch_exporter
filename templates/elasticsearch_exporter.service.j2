@@ -1,0 +1,15 @@
+[Unit]
+Description=Elasticsearch stats exporter for Prometheus
+Documentation=https://github.com/justwatchcom/elasticsearch_exporter
+After=network.target
+
+[Service]
+EnvironmentFile=-/etc/default/elasticsearch_exporter
+User=elasticsearch
+ExecStart=/usr/bin/elasticsearch_exporter
+ExecStop=/usr/bin/killall elasticsearch_exporter
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

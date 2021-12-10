@@ -1,0 +1,17 @@
+---
+- name: Install python3
+  yum:
+    name: python3
+    state: present
+
+- name: Install python-consul module
+  pip:
+    name: python-consul
+
+- name: Register Elasticsearch service with the local consul agent
+  community.general.consul:
+    host: "{{ consul_host }}"
+    service_name: "{{ consul_service_name }}"
+    service_port: "{{ consul_service_port }}"
+    interval: "{{ consul_service_interval }}"
+    tags: "{{ consul_service_tags }}"

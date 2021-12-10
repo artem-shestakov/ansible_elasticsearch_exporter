@@ -1,0 +1,39 @@
+---
+- name: Download exporter
+  get_url:
+    url: "https://github.com/prometheus-community/elasticsearch_exporter/releases/download/v{{ version }}/elasticsearch_exporter-{{ version }}.linux-amd64.tar.gz"
+    dest: /tmp/elasticsearch_exporter.tar.gz
+    mode: '0640'
+  when: version is defined
+
+- name: Unarchive exporter
+  unarchive:
+    src: /tmp/elasticsearch_exporter.tar.gz
+    dest: /tmp
+    remote_src: true
+
+- name: Copy elasticsearch_exporter to /usr/bin
+  copy:
+    src: "/tmp/elasticsearch_exporter-{{ version }}.linux-amd64/elasticsearch_exporter"
+    dest: /usr/bin/elasticsearch_exporter
+    mode: '0755'
+    remote_src: true
+  notify: Restart elasticsearch_exporter
+
+- name: Setup service daemon
+  template:
+    src: elasticsearch_exporter.service.j2
+    dest: /usr/lib/systemd/system/elasticsearch_exporter.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart elasticsearch_exporter
+
+- name: Starting elasticsearch_exporter
+  systemd:
+    state: started
+    enabled: true
+    name: elasticsearch_exporter
+
+- name: Register Consul service
+  include_tasks: service_consul.yml
