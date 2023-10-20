@@ -1,0 +1,5 @@
+---
+- name: Converge
+  hosts: es_exporter 
+  roles:
+    - "ansible_elasticsearch_exporter"

@@ -1,6 +1,6 @@
 ---
 - name: Restart elasticsearch_exporter
-  service:
+  ansible.builtin.service:
     name: elasticsearch_exporter
     state: restarted
     daemon_reload: true

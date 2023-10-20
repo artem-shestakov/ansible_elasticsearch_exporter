@@ -1,0 +1,50 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: es_exporter01
+    image: ${MOLECULE_PLATFORM_IMAGE:-"artemshestakov/almalinux-8-docker:latest"}
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    groups:
+        - es_exporter
+    docker_networks:
+      - name: 'molecule-es'
+        ipam_config:
+          - subnet: '10.10.0.0/24'
+    networks:
+      - name: "molecule-es"
+        ipv4_address: '10.10.0.11'
+  - name: elasticsearch
+    image: elasticsearch:8.10.2
+    env:
+      discovery.type: single-node
+      bootstrap.memory_lock: "false"
+      ES_JAVA_OPTS: "-Xms1024m -Xmx1024m"
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    docker_networks:
+      - name: 'molecule-es'
+        ipam_config:
+          - subnet: '10.10.0.0/24'
+    networks:
+      - name: "molecule-es"
+        ipv4_address: '10.10.0.12'
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      es_exporter01:
+        es_exporter_user: root
+        # es_uri: http://10.10.0.12:9200
+verifier:
+  name: testinfra
+  options:
+    v: 2
