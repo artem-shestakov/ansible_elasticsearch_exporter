@@ -1,0 +1,25 @@
+---
+- name: Restart elasticsearch_exporter
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    enabled: true
+    name: elasticsearch_exporter.service
+    state: restarted
+
+- name: Delete restart flag
+  become: true
+  ansible.builtin.file:
+    path: /tmp/elasticsearch_exporter.restart
+    state: absent
+
+- name: Waiting for exporter to come online
+  ansible.builtin.uri:
+    method: GET
+    url: http://{{ web_listen_address }}{{ web_telemetry_path }}
+    status_code:
+      - 200
+  register: status
+  until: status.status == 200
+  retries: 10
+  delay: 5

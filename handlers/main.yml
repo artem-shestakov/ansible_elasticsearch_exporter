@@ -1,6 +1,3 @@
 ---
-- name: Restart elasticsearch_exporter
-  ansible.builtin.service:
-    name: elasticsearch_exporter
-    state: restarted
-    daemon_reload: true
+- name: Restart
+  include_tasks: tasks/restart.yaml

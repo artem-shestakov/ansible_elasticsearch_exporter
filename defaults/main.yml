@@ -20,5 +20,5 @@ es_timeout: 5s
 # es_client_cert: ""
 es_clusterinfo_interval: 5m
 es_ssl_skip_verify: false
-web_listen_address: ":9114"
+web_listen_address: "127.0.0.1:9114"
 web_telemetry_path: /metrics

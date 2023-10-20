@@ -19,6 +19,18 @@
     remote_src: true
   notify: Restart elasticsearch_exporter
 
+- name: Check restart flag after last playbook run
+  stat: path=/tmp/elasticsearch_exporter.restart
+  register: restart_flag
+
+- name: Create restart flag
+  become: true
+  ansible.builtin.file:
+    path: /tmp/elasticsearch_exporter.restart
+    state: touch
+  changed_when: false
+  when: not restart_flag.stat.exists
+
 - name: Setup service daemon
   ansible.builtin.template:
     src: elasticsearch_exporter.service.j2
@@ -26,10 +38,33 @@
     owner: root
     group: root
     mode: '0644'
-  notify: Restart elasticsearch_exporter
+  register: systemd_srv
+  notify: Restart
+
+- name: Delete restart flag
+  become: true
+  ansible.builtin.file:
+    path: /tmp/elasticsearch_exporter.restart
+    state: absent
+  when:
+    - not restart_flag.stat.exists
+    - not systemd_srv.changed
+  changed_when: false
 
 - name: Enable elasticsearch_exporter
   ansible.builtin.systemd:
     state: started
     enabled: true
     name: elasticsearch_exporter
+
+- name: Need restart
+  debug:
+    msg: "{% if restart_flag.stat.exists %}Need{% else %}No need{% endif %} restart exporter"
+  changed_when: restart_flag.stat.exists
+  notify: Restart
+
+# - name: Check if need to restart
+#   stat: path=/tmp/elasticsearch_exporter.restart
+#   register: elasticsearch_exporter_restart
+#   changed_when: elasticsearch_exporter_restart.stat.exists
+#   notify: Restart
