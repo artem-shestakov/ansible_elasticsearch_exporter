@@ -17,7 +17,7 @@
     dest: /usr/bin/elasticsearch_exporter
     mode: '0755'
     remote_src: true
-  notify: Restart elasticsearch_exporter
+  notify: Restart
 
 - name: Check restart flag after last playbook run
   stat: path=/tmp/elasticsearch_exporter.restart
@@ -62,9 +62,3 @@
     msg: "{% if restart_flag.stat.exists %}Need{% else %}No need{% endif %} restart exporter"
   changed_when: restart_flag.stat.exists
   notify: Restart
-
-# - name: Check if need to restart
-#   stat: path=/tmp/elasticsearch_exporter.restart
-#   register: elasticsearch_exporter_restart
-#   changed_when: elasticsearch_exporter_restart.stat.exists
-#   notify: Restart
