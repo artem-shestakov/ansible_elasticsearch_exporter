@@ -1,0 +1,8 @@
+---
+- name: Prepare
+  hosts: es_exporter
+  tasks:
+  - name: Install cUrl
+    ansible.builtin.package:
+      name: curl
+      state: present

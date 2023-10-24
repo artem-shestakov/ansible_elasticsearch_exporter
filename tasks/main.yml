@@ -1,7 +1,9 @@
 ---
 - name: Download exporter
   ansible.builtin.get_url:
-    url: "https://github.com/prometheus-community/elasticsearch_exporter/releases/download/v{{ version }}/elasticsearch_exporter-{{ version }}.linux-amd64.tar.gz"
+    url: "https://github.com/prometheus-community/elasticsearch_exporter/\
+          releases/download/v{{ version }}/\
+          elasticsearch_exporter-{{ version }}.linux-amd64.tar.gz"
     dest: /tmp/elasticsearch_exporter-{{ version }}.tar.gz
     mode: '0640'
 
@@ -13,14 +15,16 @@
 
 - name: Copy elasticsearch_exporter to /usr/bin
   ansible.builtin.copy:
-    src: "/tmp/elasticsearch_exporter-{{ version }}.linux-amd64/elasticsearch_exporter"
+    src: "/tmp/elasticsearch_exporter-{{ version }}.linux-amd64/\
+          elasticsearch_exporter"
     dest: /usr/bin/elasticsearch_exporter
     mode: '0755'
     remote_src: true
   notify: Restart
 
 - name: Check restart flag after last playbook run
-  stat: path=/tmp/elasticsearch_exporter.restart
+  ansible.builtin.stat:
+    path: /tmp/elasticsearch_exporter.restart
   register: restart_flag
 
 - name: Create restart flag
@@ -28,6 +32,7 @@
   ansible.builtin.file:
     path: /tmp/elasticsearch_exporter.restart
     state: touch
+    mode: '0640'
   changed_when: false
   when: not restart_flag.stat.exists
 
@@ -58,7 +63,8 @@
     name: elasticsearch_exporter
 
 - name: Need restart
-  debug:
-    msg: "{% if restart_flag.stat.exists %}Need{% else %}No need{% endif %} restart exporter"
+  ansible.builtin.debug:
+    msg: "{% if restart_flag.stat.exists %}Need{% else %}\
+          No need{% endif %} restart exporter"
   changed_when: restart_flag.stat.exists
   notify: Restart
