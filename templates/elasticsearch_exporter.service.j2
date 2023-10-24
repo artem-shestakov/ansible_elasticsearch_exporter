@@ -5,8 +5,8 @@ After=network.target
 
 [Service]
 EnvironmentFile=-/etc/default/elasticsearch_exporter
-User=elasticsearch
-ExecStart=/usr/bin/elasticsearch_exporter
+User={{ es_exporter_user }}
+ExecStart=/usr/bin/elasticsearch_exporter --es.uri={{ es_uri }}{% if es_all %} --es.all{% endif %}{% if cluster_settings %} --es.cluster_settings{% endif %}{% if es_indices %} --es.indice{% endif %}{% if es_indices_settings %} --es.indices_settings{% endif %}{% if es_indices_mappings %} --es.indices_mappings{% endif %}{% if es_aliases %} --es.aliases{% endif %}{% if es_shards %} --es.shards{% endif %}{% if es_snapshots %} --es.snapshots \{% endif %}{% if es_slm %} --es.slm{% endif %}{% if es_data_stream %} --es.data_stream{% endif %} --es.timeout={{ es_timeout }}{% if es_ca is defined %} --es.ca={{ es_ca }}{% endif %}{% if es_client_private_key is defined %} --es.client-private-key={{ es_client_private_key }}{% endif %}{% if es_client_cert is defined %} --es.client-cert={{ es_client_cert }}{% endif %} --es.clusterinfo.interval={{ es_clusterinfo_interval }}{% if es_ssl_skip_verify %} --es.ssl-skip-verify{% endif %} --web.listen-address={{ web_listen_address }} --web.telemetry-path={{ web_telemetry_path }}
 ExecStop=/usr/bin/killall elasticsearch_exporter
 Restart=on-failure
 RestartSec=5s

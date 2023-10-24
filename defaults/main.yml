@@ -1,8 +1,24 @@
 ---
-version: 1.3.0
-consul_host: "localhost"
-consul_service_name: elasticsearch_exporter
-consul_service_port: 9114
-consul_service_tags:
-  - exporter
-consul_service_interval: 60s
+version: 1.6.0
+
+es_exporter_user: elasticsearch
+
+es_uri: http://localhost:9200
+es_all: false
+cluster_settings: false
+es_indices: false
+es_indices_settings: false
+es_indices_mappings: false
+es_aliases: true
+es_shards: false
+es_snapshots: false
+es_slm: false
+es_data_stream: false
+es_timeout: 5s
+# es_ca: ""
+# es_client_private_key: ""
+# es_client_cert: ""
+es_clusterinfo_interval: 5m
+es_ssl_skip_verify: false
+web_listen_address: "127.0.0.1:9114"
+web_telemetry_path: /metrics

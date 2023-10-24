@@ -1,39 +1,70 @@
 ---
 - name: Download exporter
-  get_url:
-    url: "https://github.com/prometheus-community/elasticsearch_exporter/releases/download/v{{ version }}/elasticsearch_exporter-{{ version }}.linux-amd64.tar.gz"
-    dest: /tmp/elasticsearch_exporter.tar.gz
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus-community/elasticsearch_exporter/\
+          releases/download/v{{ version }}/\
+          elasticsearch_exporter-{{ version }}.linux-amd64.tar.gz"
+    dest: /tmp/elasticsearch_exporter-{{ version }}.tar.gz
     mode: '0640'
-  when: version is defined
 
 - name: Unarchive exporter
-  unarchive:
-    src: /tmp/elasticsearch_exporter.tar.gz
+  ansible.builtin.unarchive:
+    src: /tmp/elasticsearch_exporter-{{ version }}.tar.gz
     dest: /tmp
     remote_src: true
 
 - name: Copy elasticsearch_exporter to /usr/bin
-  copy:
-    src: "/tmp/elasticsearch_exporter-{{ version }}.linux-amd64/elasticsearch_exporter"
+  ansible.builtin.copy:
+    src: "/tmp/elasticsearch_exporter-{{ version }}.linux-amd64/\
+          elasticsearch_exporter"
     dest: /usr/bin/elasticsearch_exporter
     mode: '0755'
     remote_src: true
-  notify: Restart elasticsearch_exporter
+  notify: Restart
+
+- name: Check restart flag after last playbook run
+  ansible.builtin.stat:
+    path: /tmp/elasticsearch_exporter.restart
+  register: restart_flag
+
+- name: Create restart flag
+  become: true
+  ansible.builtin.file:
+    path: /tmp/elasticsearch_exporter.restart
+    state: touch
+    mode: '0640'
+  changed_when: false
+  when: not restart_flag.stat.exists
 
 - name: Setup service daemon
-  template:
+  ansible.builtin.template:
     src: elasticsearch_exporter.service.j2
     dest: /usr/lib/systemd/system/elasticsearch_exporter.service
     owner: root
     group: root
     mode: '0644'
-  notify: Restart elasticsearch_exporter
+  register: systemd_srv
+  notify: Restart
 
-- name: Starting elasticsearch_exporter
-  systemd:
+- name: Delete restart flag
+  become: true
+  ansible.builtin.file:
+    path: /tmp/elasticsearch_exporter.restart
+    state: absent
+  when:
+    - not restart_flag.stat.exists
+    - not systemd_srv.changed
+  changed_when: false
+
+- name: Enable elasticsearch_exporter
+  ansible.builtin.systemd:
     state: started
     enabled: true
     name: elasticsearch_exporter
 
-- name: Register Consul service
-  include_tasks: service_consul.yml
+- name: Need restart
+  ansible.builtin.debug:
+    msg: "{% if restart_flag.stat.exists %}Need{% else %}\
+          No need{% endif %} restart exporter"
+  changed_when: restart_flag.stat.exists
+  notify: Restart
