@@ -2,7 +2,17 @@
 - name: Prepare
   hosts: es_exporter
   tasks:
-  - name: Install cUrl
-    ansible.builtin.package:
-      name: curl
-      state: present
+    - name: Install cUrl(Debian)
+      ansible.builtin.apt:
+        name: curl
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == "Debian"
+    
+    - name: Install cUrl(RedHat)
+      ansible.builtin.dnf:
+        name: curl
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == "RedHat"
+
